@@ -10,10 +10,10 @@ Get the `.deb` and checksums from the [v0.2.0-beta1 prerelease](https://github.c
 
 ## Install on Cardputer Zero
 
-Copy `m-pocket_0.2.0~beta1_arm64.deb` to the device. In its Linux terminal, from the folder containing the file:
+Copy `m-pocket_0.2.0-beta1_arm64.deb` to the device. In its Linux terminal, from the folder containing the file:
 
 ```sh
-sudo apt install './m-pocket_0.2.0~beta1_arm64.deb'
+sudo apt install './m-pocket_0.2.0-beta1_arm64.deb'
 ```
 
 Then open **m pocket** from the Cardputer launcher. A launcher restart may be needed to discover a newly installed app. Wi-Fi must already be connected through the system settings.
@@ -61,7 +61,7 @@ cmake -S . -B build-arm64 \
   -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
 cmake --build build-arm64 -j 4
 DESTDIR="$PWD/stage" cmake --install build-arm64
-python3 packaging/build_deb.py stage m-pocket_0.2.0~beta1_arm64.deb
+python3 packaging/build_deb.py stage m-pocket_0.2.0-beta1_arm64.deb
 ```
 
 Optional display/input overrides: `M_POCKET_FB=/dev/fb0` and `M_POCKET_INPUT=/dev/input/eventN`. These help diagnose a firmware with different device names. No root background process is needed.
