@@ -1,0 +1,19 @@
+# Local builds and private runtime data
+/work/
+/build*/
+/stage/
+/.cache/
+*.deb
+*.zip
+*.dylib
+*.app/
+__pycache__/
+*.py[cod]
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules/
+.wrangler/
+preferences.json
+registrations.json

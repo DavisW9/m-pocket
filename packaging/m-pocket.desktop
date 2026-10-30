@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=m pocket
+Comment=Mastodon for Cardputer Zero
+Exec=/usr/bin/m-pocket
+Icon=share/images/m-pocket.png
+Terminal=false
+Categories=Network;
+StartupNotify=false
