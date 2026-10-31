@@ -4,7 +4,7 @@ const hex64 = /^[a-f0-9]{64}$/;
 const headers = {'Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"};
 const json = (data,status=200,extra={}) => Response.json(data,{status,headers:{...headers,...extra}});
 const escape = s => s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const page = (text,link='',label='') => new Response(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Pocket Mastodon</title><style>body{font:18px system-ui;background:#f3effa;color:#302740;max-width:32rem;margin:12vh auto;padding:24px;line-height:1.6}a{display:block;background:#7054aa;color:white;padding:12px 18px;text-decoration:none;border-radius:8px}small{color:#726585}</style><h1>Pocket Mastodon</h1><p>${escape(text)}</p>${link?`<a href="${escape(link)}">${escape(label)}</a>`:''}<p><small>You can close this page after approving access.</small></p></html>`,{headers:{...headers,'Content-Type':'text/html; charset=utf-8'}});
+const page = (text,link='',label='') => new Response(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>M-Pocket</title><style>body{font:18px system-ui;background:#f3effa;color:#302740;max-width:32rem;margin:12vh auto;padding:24px;line-height:1.6}a{display:block;background:#7054aa;color:white;padding:12px 18px;text-decoration:none;border-radius:8px}small{color:#726585}</style><h1>M-Pocket</h1><p>${escape(text)}</p>${link?`<a href="${escape(link)}">${escape(label)}</a>`:''}<p><small>You can close this page after approving access.</small></p></html>`,{headers:{...headers,'Content-Type':'text/html; charset=utf-8'}});
 const digest = async s => [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(n=>n.toString(16).padStart(2,'0')).join('');
 const random = () => [...crypto.getRandomValues(new Uint8Array(32))].map(n=>n.toString(16).padStart(2,'0')).join('');
 
@@ -68,14 +68,14 @@ export class PairingCore {
       if([...url.searchParams.keys()].some(k=>url.searchParams.getAll(k).length!==1))return json({error:'duplicate_parameter'},400);
       if(url.searchParams.get('state')!==s.state)return json({error:'state'},400);
       const code=url.searchParams.get('code'),error=url.searchParams.get('error');
-      if(s.result)return page('This sign-in link has already been used. Return to Pocket Mastodon.');
+      if(s.result)return page('This sign-in link has already been used. Return to M-Pocket.');
       if(error) s.result={error:'access_denied'};
       else if(code && code.length<=2048)s.result={code};
       else return json({error:'missing_code'},400);
       this.storage.kv.put('session',s);
-      return page(error?'Access was not approved. Return to Pocket Mastodon to try again.':'Approval received. Your Cardputer will finish signing in automatically. No code to type.');
+      return page(error?'Access was not approved. Return to M-Pocket to try again.':'Approval received. Your Cardputer will finish signing in automatically. No code to type.');
     }
-    if(s.result)return page('Approval already received. Return to Pocket Mastodon.');
+    if(s.result)return page('Approval already received. Return to M-Pocket.');
     const auth=new URL('https://'+s.server+'/oauth/authorize');
     auth.search=new URLSearchParams({response_type:'code',client_id:s.client_id,redirect_uri:url.origin+'/callback',scope:'read:statuses write:statuses',state:s.state,code_challenge:s.challenge,code_challenge_method:'S256'});
     if(url.pathname.endsWith('/authorize'))return new Response(null,{status:302,headers:{...headers,Location:auth.href}});
