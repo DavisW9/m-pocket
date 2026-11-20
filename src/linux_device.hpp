@@ -3,6 +3,7 @@
 #include <sys/ioctl.h>
 #include <dirent.h>
 #include <fstream>
+#include <xkbcommon/xkbcommon.h>
 static volatile sig_atomic_t stopRequested=0;
 static void stopSignal(int){stopRequested=1;}
 static std::string framebufferPath(){
@@ -31,13 +32,35 @@ static int openKeyboard(){
 }
 #include "keyboard_text.hpp"
 static bool leftShift=false,rightShift=false,caps=false,sym=false;
+struct CpzKeymapEntry { unsigned code; char text[8]; };
+static CpzKeymapEntry cpzKeymap[64];
+static size_t cpzKeymapSize=0;
+static void loadCpzKeymap(){
+    FILE *file=fopen("/usr/share/keymaps/tca8418_keypad_m5stack_keymap.map","r");
+    if(!file)return;
+    xkb_context *context=xkb_context_new(XKB_CONTEXT_NO_FLAGS); if(!context){fclose(file);return;}
+    char line[256],name[64]; unsigned code;
+    while(cpzKeymapSize<64 && fgets(line,sizeof(line),file)){
+        if(sscanf(line,"keycode %u = %63s",&code,name)!=2)continue;
+        xkb_keysym_t sym=xkb_keysym_from_name(name,XKB_KEYSYM_NO_FLAGS);
+        int length=sym==XKB_KEY_NoSymbol?0:xkb_keysym_to_utf8(sym,cpzKeymap[cpzKeymapSize].text,sizeof(cpzKeymap[0].text));
+        if(length<=0)continue;
+        cpzKeymap[cpzKeymapSize].code=code;++cpzKeymapSize;
+    }
+    xkb_context_unref(context);fclose(file);
+}
+static char cpzMappedCharacter(unsigned code){
+    for(size_t i=0;i<cpzKeymapSize;++i)if(cpzKeymap[i].code==code)return cpzKeymap[i].text[0];
+    return 0;
+}
 static unsigned heldCode=0;
 static double repeatAt=0;
 static void dispatchKey(unsigned code,bool repeated){
     int k=0;
     switch(code){case KEY_ESC:k=K_ESCAPE;break;case KEY_ENTER:k=K_ENTER;break;case KEY_BACKSPACE:k=K_BACKSPACE;break;
         case KEY_LEFT:k=K_LEFT;break;case KEY_RIGHT:k=K_RIGHT;break;case KEY_UP:k=K_UP;break;case KEY_DOWN:k=K_DOWN;break;}
-    char text=typedCharacter(code,leftShift||rightShift,caps,sym);
+    char text=cpzMappedCharacter(code);
+    if(!text)text=typedCharacter(code,leftShift||rightShift,caps,sym);
     if(!k && text)k=(text>='A'&&text<='Z')?text+32:text;
     if(k)key(k,text?std::string(1,text):"",repeated);
 }
@@ -49,7 +72,8 @@ static void readKeyboard(int fd){
         if(event.code==KEY_LEFTSHIFT){leftShift=event.value!=0;continue;}
         if(event.code==KEY_RIGHTSHIFT){rightShift=event.value!=0;continue;}
         if(event.code==KEY_CAPSLOCK){if(event.value==1)caps=!caps;continue;}
-        if(event.code==KEY_COMPOSE){if(event.value==1)sym=!sym;continue;}
+        if((event.code==KEY_COMPOSE || event.code==KEY_RIGHTALT || event.code==KEY_CD) && event.value==1){sym=!sym;continue;}
+        if(event.code==KEY_COMPOSE || event.code==KEY_RIGHTALT || event.code==KEY_CD)continue;
         if(event.value==0){if(heldCode==event.code)heldCode=0;continue;}
         if(event.value!=1)continue; // Own repeat works with keyboards without EV_REP.
         dispatchKey(event.code,false);

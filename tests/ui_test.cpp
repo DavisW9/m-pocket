@@ -10,6 +10,7 @@ int main(int argc,char **argv){
     assert(typedCharacter(232,false,false,false)=='.');
     assert(typedCharacter(212,false,false,false)=='_');
     assert(typedCharacter(31,false,false,true)=='.');
+    assert(typedCharacter(20,false,false,true)=='/');
     assert(typedCharacter(30,true,false,false)=='A');
     assert(typedCharacter(16,false,false,false)=='q');
     assert(typedCharacter(11,true,false,false)==')');

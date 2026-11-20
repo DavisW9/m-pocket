@@ -395,6 +395,7 @@ int main(int argc,char **argv){
     if(lv_display_get_horizontal_resolution(display)!=320 || lv_display_get_vertical_resolution(display)!=170){fprintf(stderr,"m pocket requires a 320x170 framebuffer.\n");return 1;}
     int keyboard=openKeyboard();
     if(keyboard<0){fprintf(stderr,"Cannot open Cardputer keyboard. Check input-group access.\n");return 1;}
+    loadCpzKeymap();
     if(!startHelper("/usr/lib/m-pocket/service.py")){fprintf(stderr,"Cannot start network helper.\n");close(keyboard);return 1;}
     signal(SIGTERM,stopSignal);signal(SIGINT,stopSignal);
     ui_init();send({{"op","prefs"}});
